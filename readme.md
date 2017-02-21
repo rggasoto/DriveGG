@@ -9,9 +9,10 @@ The game needs to be configured to not display HUD, and use the custom camera po
 ---------
 
 ##TODOS
-*Upload Datasets (black, white, both) Using Git LFS
-*Warping
-*Augment Data
-*Eval Function (abs pos,xyz error)
-*Augmentation
-*LSTMs, RNNs
+
+* Upload Datasets (black, white, both) Using Git LFS
+* Warping
+* Augment Data
+* Eval Function (abs pos,xyz error)
+* Augmentation
+* LSTMs, RNNs
