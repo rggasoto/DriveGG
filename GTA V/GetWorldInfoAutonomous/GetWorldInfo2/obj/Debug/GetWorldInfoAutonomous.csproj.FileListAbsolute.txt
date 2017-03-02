@@ -1,0 +1,5 @@
+C:\Program Files\Rockstar Games\Grand Theft Auto V\scripts\GetWorldInfoAutonomous.dll
+C:\Program Files\Rockstar Games\Grand Theft Auto V\scripts\GetWorldInfoAutonomous.pdb
+E:\DriveGG\GTA V\GetWorldInfoAutonomous\GetWorldInfo2\obj\Debug\GetWorldInfoAutonomous.csprojResolveAssemblyReference.cache
+E:\DriveGG\GTA V\GetWorldInfoAutonomous\GetWorldInfo2\obj\Debug\GetWorldInfoAutonomous.dll
+E:\DriveGG\GTA V\GetWorldInfoAutonomous\GetWorldInfo2\obj\Debug\GetWorldInfoAutonomous.pdb

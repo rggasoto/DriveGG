@@ -17,8 +17,8 @@ def processImgTrain(img,angle):
 
 def processImg(img):
     #Crop top half
-    h, w,l = img.shape
-    img = img[int(h/2):,:,:]        
+   # h, w,l = img.shape
+   # img = img[int(h/2):,:,:]        
     yuv=cv2.cvtColor(img,cv2.COLOR_RGB2YUV)  
    
     channels= cv2.split(yuv)
@@ -29,11 +29,11 @@ def processImg(img):
    
     img=cv2.cvtColor(yuv,cv2.COLOR_YUV2RGB)  
     
-    mean = np.mean(img)    
-    img = img - mean
-    s = np.std(img)
-    img = img/s
-    img =  cv2.resize(img,(160,40), interpolation = cv2.INTER_AREA)
+   # mean = np.mean(img)    
+   # img = img - mean
+   # s = np.std(img)
+   # img = img/s
+    img =  cv2.resize(img,(64,64), interpolation = cv2.INTER_AREA)
     #cv2.imshow('test',img)
     #cv2.waitKey(1)
     return img

@@ -36,6 +36,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Emgu.CV.World">
+      <HintPath>C:\Emgu\emgucv-windesktop 3.1.0.2504\bin\Emgu.CV.World.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="ScriptHookVDotNet">
       <HintPath>C:\Users\rggasoto\Documents\Visual Studio 2015\Projects\ScriptHookVDotNet.dll</HintPath>

@@ -17,6 +17,9 @@ using DeveloperConsole;
 using GetWorldInfo;
 using System.Drawing.Imaging;
 using System.Drawing.Drawing2D;
+using System.Reflection;
+using Emgu.CV;
+using Emgu.CV.Structure;
 
 namespace GetCarInfo
 {
@@ -33,9 +36,39 @@ namespace GetCarInfo
         IPHostEntry hostInfo;
         IPAddress serverAddr;
         const string DEFAULT_SERVER = "localhost";
-        const int DEFAULT_PORT = 809;        
+        const int DEFAULT_PORT = 809;
+        Matrix<double> Warp;
+        void Log(string logLevel, List<string> message)
+        {
+            DateTime datetime = DateTime.Now;
+            string logPath = "C:\\Program Files\\Rockstar Games\\Grand Theft Auto V\\GetWorldInfoAutonomous.log";
 
+            try
+            {
+                var fs = new System.IO.FileStream(logPath, FileMode.Append, FileAccess.Write, FileShare.Read);
+                var sw = new System.IO.StreamWriter(fs);
 
+                try
+                {
+                    sw.Write(string.Concat("[", datetime.ToString("HH:mm:ss"), "] ", logLevel, " "));
+
+                    foreach (string s in message)
+
+                    {
+                        sw.Write(s);
+                    }
+
+                    sw.WriteLine();
+                }
+                finally
+                {
+                    sw.Close();
+                    fs.Close();
+                }
+            }
+            catch (Exception exc) {
+            }
+        }
         public GetWorldInfoAutonomous()
         {
             offset = new Vector3();
@@ -50,11 +83,54 @@ namespace GetCarInfo
             clientSocket = new System.Net.Sockets.Socket(System.Net.Sockets.AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
             try { clientSocket.Connect(clientEndPoint); }
             catch { }
-
-
-
+            Log("[DEBUG]", new List<string> { "test" });
+            
+            PointF[] src = new PointF[4];
+            src[0] = new PointF(-300.0f,620.0f);
+            src[1] = new PointF(1580.0f,620.0f);
+            src[2] = new PointF(736.0f,378.0f);
+            src[3] = new PointF(544.0f,378.0f);
+            PointF[] dst = new PointF[4];            
+            dst[0] = new PointF(0.0f ,720.0f);
+            dst[1] = new PointF(1280.0f,720.0f);
+            dst[2] = new PointF(1280.0f,0.0f);
+            dst[3] = new PointF(0.0f,0.0f);
+            try
+            {
+                Mat w = CvInvoke.GetPerspectiveTransform(src, dst);
+               
+                Warp = new Matrix<double>(w.Width, w.Height);
+                w.ConvertTo(Warp, Emgu.CV.CvEnum.DepthType.Cv64F);
+            }
+            catch (Exception exc)
+            {
+                Log("[WARP TRANSFORM ERROR]", new List<string> { exc.Message, exc.InnerException.Message });
+            }
+            List<string> vals = new List<string>();
+            for (int i = 0; i < Warp.Width; i++)
+            {
+                for (int j = 0; j < Warp.Height; j++)
+                {
+                    vals.Add(Warp.Data[i,j].ToString());
+                }
+            }
+            Log("W mat", vals);
+            //Log("[WARP Matrix]", new List<string> { Warp.Data[0,2].ToString()});
             Interval = 1;
         }
+        //public List<Vector2>> GetCalibrationPoints()
+        //{
+        //    Vector3 cameraPos = GameplayCamera.Position;
+        //    Vector3 cameraDir = GameplayCamera.Direction;
+        //    List <Vector2> points = new List<Tuple<Vector3, Vector2>>();
+        //    for (int i =0; i< 10; i++)
+        //    {
+        //        for (int j = 0; j< 10; j++)
+        //        {
+        //            for int k = 0;
+        //        }
+        //    }
+        //}
         public static Bitmap ResizeImage(Image image, int width, int height)
         {
             var destRect = new Rectangle(0, 0, width, height);
@@ -69,10 +145,11 @@ namespace GetCarInfo
                 graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
                 graphics.SmoothingMode = SmoothingMode.HighQuality;
                 graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-
+                
                 using (var wrapMode = new ImageAttributes())
                 {
                     wrapMode.SetWrapMode(WrapMode.TileFlipXY);
+                                        
                     graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
                 }
             }
@@ -248,13 +325,24 @@ namespace GetCarInfo
 
             if (Save)
             {
-                
-                Thread ts = new Thread(() => save(ResizeImage(bmp,200,150), ss));
-                ts.Start();
+                try
+                {
+
+                    Image<Emgu.CV.Structure.Bgra, double> original = new Image<Emgu.CV.Structure.Bgra, double>(bmp);
+                    var warped = original.WarpPerspective<double>(Warp, Emgu.CV.CvEnum.Inter.Cubic, Emgu.CV.CvEnum.Warp.Default, Emgu.CV.CvEnum.BorderType.Default, new Emgu.CV.Structure.Bgra(0, 0, 0, 0));
+                    //CvInvoke.WarpPerspective(original, warped, Warp, bmp.Size, Emgu.CV.CvEnum.Inter.Cubic);
+                    Thread ts = new Thread(() => save(ResizeImage(warped.Bitmap, 64, 64), ss));
+                    ts.Start();
+                }
+                catch (Exception exc)
+                {
+                    Log("[DEBUG]", new List<string> { exc.Message, exc.InnerException.Message });
+                }
+               
             }
             else
             {
-                UIText text = new UIText("Press R to start streaming", new Point(UI.WIDTH / 2, 15), 0.4f, Color.Blue, GTA.Font.ChaletLondon, true);
+                UIText text = new UIText(Assembly.GetExecutingAssembly().Location, new Point(UI.WIDTH / 2, 15), 0.4f, Color.Blue, GTA.Font.ChaletLondon, true);
                 text.Draw();
                 Draw(Vs2.ToArray(), World.RenderingCamera.Position);
             }
@@ -410,6 +498,7 @@ namespace GetCarInfo
                 }
             }
         }
+
 
     }
 }
